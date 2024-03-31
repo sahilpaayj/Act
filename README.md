@@ -10,29 +10,32 @@ Fint is a screen recorder designed to monitor online shopping activity. It captu
 
 - Created this on python 3.11.8 + macOS
 
-1. Install Poetry
+#### 1. Install Poetry
 Poetry is a tool for dependency management and packaging in Python. To install Poetry, run the following command:
 ```sh
 pipx install poetry
 ```
 
-2. Clone the Repository from GitHub:
+
+#### 2. Clone the Repository from GitHub:
 ```sh
-git clone <REPOSITORY_URL>
+git clone https://github.com/sahilpaayj/Fint.git
 ```
 
 Enter the Repository
 ```sh
-cd <REPOSITORY_NAME>
+cd Fint
 ```
 
-3. Activate Virtual Environment (do this every time you are running code)
+
+#### 3. Activate Virtual Environment (do this every time you are running code)
 Poetry creates a virtual environment for your project. This is where dependencies and 'global' variables are stored. To activate this environment, run:
 ```sh
 poetry shell
 ```
 
-4. Install Dependencies
+
+#### 4. Install Dependencies
 
 Install the project dependencies with Poetry:
 ```sh
