@@ -1,8 +1,8 @@
-Certainly! I'll format the setup instructions for your project Fint in a README.md style, incorporating best practices for installing Poetry and setting up the project.
-
 # Fint
 
-Fint is a screen recorder designed to monitor online shopping activity. It captures images of the user's active window, processes them with OCR (Optical Character Recognition) and/or a Language Model. If the AI detects online shopping activity, it alerts hume.ai, an emotionally aware voice-to-voice AI, to engage with the user and help reconsider their purchasing decisions.
+Fint is a screen recorder designed to monitor and action. 
+
+Fint is built as a desktop app that captures the user's active window, processes them with OCR (Optical Character Recognition) and/or a Language Model. If the AI detects a certain activity (online shopping, playing games), it alerts hume.ai, an emotionally aware voice-to-voice AI, to engage with the user and help reconsider their purchasing decisions.
 
 ## Installation and Setup
 

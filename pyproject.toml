@@ -8,6 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "3.11.8"
 mss = "^9.0.1"
+xdotool = "^0.4.0"
 
 
 [build-system]

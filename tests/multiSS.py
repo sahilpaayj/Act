@@ -2,6 +2,11 @@ import mss
 import time
 import os
 
+'''
+Enabled VScode to view screen
+- App will need this permission
+'''
+
 # os.path.abspath() - absolute path of current script
 # os.path.dirname() - parent directory of current script
 parent = os.path.dirname(os.path.abspath(__file__))
