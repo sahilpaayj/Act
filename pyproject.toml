@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "fint"
+version = "0.1.0"
+description = "a screen recorder that feeds images of the user's active window to OCR and/or LVM. If the AI detects that the user is online shopping it sends a ping to prompt hume.ai, an emotionally aware voice-to-voice AI, that can talk to and reason with the user and convince them to not purchase anything."
+authors = ["Sahil Patel <sahil@paayj.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.11.8"
+mss = "^9.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
