@@ -21,6 +21,7 @@ run() - checks every 5 seconds if a user is using specific websites
 #TODO: Clean up screenshots on program close, unless id'd
 #TODO: Add mark to the place on the image that the model found
 #TODO: Preprocess images, as small as possible
+#TODO: Only take pictures when the display is a web browser, no online shopping offline right? but games have in app purchases?
 '''
 
 # Load websites on nono list from JSON file
