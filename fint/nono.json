@@ -1,0 +1,9 @@
+{
+    "patterns": [
+        "amazon.com",
+        "https?://(www\\.)?amazon\\.com",
+        "ebay.com",
+        "https?://(www\\.)?ebay\\.com",
+        "www.petco.com"
+    ]
+}

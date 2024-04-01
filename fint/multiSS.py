@@ -12,6 +12,12 @@ Enabled VScode to view screen
 parent = os.path.dirname(os.path.abspath(__file__))
 ss_path = os.path.join(parent, f'screenshots/test_{time.strftime("%Y-%m-%d_%H-%M-%S")}')
 
+def capture(dimensions, filename, debug):
+    with mss.mss() as sct:
+        ss = sct.grab(dimensions)
+        mss.tools.to_png(ss.rgb, ss.size, output=filename)
+        if debug: print(f"---------\n{time.strftime('%Y-%m-%d_%H-%M-%S')}: Screenshot saved as {filename}")
+
 # Capture a window, specify dimensions of the window to capture or it will default to the user's whole primary monitor
 #   directory - file path to save files to
 #   index (int) - # of times this has been called externally, for file naming

@@ -40,6 +40,50 @@ def cc_ocr(directory, index, interval, debug=False):
             time.sleep(interval)
 
 
+def process_image(image_queue):
+        # Wait for an image filename from the main process
+        filename = image_queue.get()
+        if filename is None:
+            return
+
+        # send OCR on the image
+        ocr = pytesseract.image_to_string(Image.open(filename))
+        if self.debug: print(f"\n{time.strftime('%Y-%m-%d_%H-%M-%S')}\n{ocr}\n")
+
+        self.text_queue.put(ocr)
+
+def cc_aocr(interval, debug=False):
+    parent = os.path.dirname(os.path.abspath(__file__))
+    directory = os.path.join(parent, f'screenshots/test_{time.strftime("%Y-%m-%d_%H-%M-%S")}')
+    os.makedirs(directory, exist_ok=True)
+
+    # Tesseract OCR
+    pytesseract.pytesseract.tesseract_cmd = r'/usr/local/bin/tesseract' # Location of tesseract executable - found with $ which tesseract
+    image_queue = Queue()
+    image_process = Process(target=process_image)
+    image_process.start()
+
+    if debug: print('DEBUGGING ENABLED')
+
+    index = 0
+    with mss.mss() as sct:
+        while True:
+            # Get the geometry of the active window
+            monitor = add_macOS()
+            filename = f"{directory}/cwi_c{index}_{time.strftime('%Y-%m-%d_%H-%M-%S')}.png" 
+                
+            # Capture the specified monitor
+            ss = sct.grab(monitor)
+            mss.tools.to_png(ss.rgb, ss.size, output=filename)
+            if debug: print(f"---------\nScreenshot saved as {filename}  -  {time.strftime('%Y-%m-%d_%H-%M-%S')}")
+
+            image_queue.put(filename)
+            #ocr = pytesseract.image_to_string(Image.open(filename))
+            #if debug: print(f"\n{time.strftime('%Y-%m-%d_%H-%M-%S')}\n{ocr}\n")
+            index += 1
+            time.sleep(interval)
+
+
 
 class Runner:
     def __init__(self, interval, debug=False):
@@ -49,15 +93,8 @@ class Runner:
         if self.debug: print('DEBUGGING ENABLED')
 
         # Create directory for this sessions screenshots
-        parent = os.path.dirname(os.path.abspath(__file__))
-        self.ss_path = os.path.join(parent, f'screenshots/test_{time.strftime("%Y-%m-%d_%H-%M-%S")}')
-        os.makedirs(self.ss_path, exist_ok=True) # Check if directory exists, create if not
         
-        # Tesseract OCR
-        pytesseract.pytesseract.tesseract_cmd = r'/usr/local/bin/tesseract'
-        self.image_queue = Queue()
-        self.image_process = Process(target=self.process_image)
-        self.image_process.start()
+        os.makedirs(self.ss_path, exist_ok=True) # Check if directory exists, create if not
 
         # Websites to shut down - nono.json in repo
         self.websites = self.load_json(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'nono.json'))
@@ -84,17 +121,7 @@ class Runner:
             print(f"All good")
 
     # Process images from Queue
-    def process_image(self):
-        # Wait for an image filename from the main process
-        filename = self.image_queue.get()
-        if filename is None:
-            return
-
-        # send OCR on the image
-        ocr = pytesseract.image_to_string(Image.open(filename))
-        if self.debug: print(f"\n{time.strftime('%Y-%m-%d_%H-%M-%S')}\n{ocr}\n")
-
-        self.text_queue.put(ocr)
+    
 
     # Continuously capture specific dimensions and asynchronosly hit ocr
     def cc_aocr(self):
