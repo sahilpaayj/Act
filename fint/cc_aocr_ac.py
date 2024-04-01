@@ -1,12 +1,9 @@
 import os
 import re
 # import mss
-import sys
 import cv2
 import json
 import time
-import shutil
-import signal
 import pytesseract
 
 from PIL import Image
@@ -27,10 +24,6 @@ run() - checks every 5 seconds if a user is using specific websites
 #TODO: Add mark to the place on the image that the model found
 #TODO: Only take pictures when the display is a web browser, no online shopping offline right? but games have in app purchases?
 '''
-
-def signal_handler(sig, frame):
-    print('Gracefully exiting, cleaning up files')
-    sys.exit(0)
 
 def preprocess_image(image_path, debug):
     if debug: print(f"{time.strftime('%Y-%m-%d_%H-%M-%S')}: Preprocessing started")
@@ -93,7 +86,6 @@ def process_image(image_queue, text_queue, debug):
 # check_patterns() receives output, runs pattern matching
 def run(interval=5, debug=False):
     if debug: print('DEBUGGING ENABLED')
-    #signal.signal(signal.SIGINT, signal_handler)
 
     # Create directory for this sessions screenshots
     parent = os.path.dirname(os.path.abspath(__file__))
@@ -124,10 +116,6 @@ def run(interval=5, debug=False):
         image_queue.put(filename)
         index += 1
         time.sleep(interval)
-    #except KeyboardInterrupt:
-    #    print(f"Directory: {directory}")
-    #    #shutil.rmtree(directory)
-    #    pass
 
 if __name__ == '__main__':
     run(5, True)
