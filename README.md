@@ -1,8 +1,16 @@
 # Fint
+Find it, take action: Fint
 
 Fint is a screen recorder designed to monitor and action. 
 
-Fint is built as a desktop app that captures the user's active window, processes them with OCR (Optical Character Recognition) and/or a Language Model. If the AI detects a certain activity (online shopping, playing games), it alerts hume.ai, an emotionally aware voice-to-voice AI, to engage with the user and help reconsider their purchasing decisions.
+Fint is a desktop app moniotrs the user's active display (whatever screen the user has selected). Depending on the display we can do different things, character recognition, gesture recognition, measure idle time, pattern matching, etc., some things with AI and some things without, but to identify when a user is doing a certain activity (online shopping, gambling, playing games, slacking off). When Fint identifies a no no, it takes action.
+
+Next projects:
+- add mouse gesture recognition support, maybe a learn mode?
+- add a GUI
+- action support: text with twilio, voice to voice (hume.ai), notifications, open to ideas!
+- OS: build Ubuntu, Linux support. Should be easy at this point, add_macOS() is only macOS specific piece to my knowledge
+- mobile: would love to add mobile support, iOS permissions might be tough
 
 ## Installation and Setup
 
