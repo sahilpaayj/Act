@@ -6,9 +6,10 @@ authors = ["Sahil Patel <sahil@paayj.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "3.11.8"
+python = "^3.11.8"
 mss = "^9.0.1"
 xdotool = "^0.4.0"
+pytesseract = "^0.3.10"
 
 
 [build-system]

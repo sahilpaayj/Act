@@ -1,5 +1,3 @@
-# import pygetwindow as gw
-# import pyautogui
 import subprocess
 
 '''
@@ -7,9 +5,10 @@ Enabled VScode to talk to system events
 - App will need this permission
 '''
 
-# Capture dimensions of the active display on linux (macOS) 
+# Capture dimensions of the active display on macOS
 # add - active display's dimensions
-def add_linux():
+# TODO: uses z-index, captures command+F box active even if not selected
+def add_macOS():
     # AppleScript
     script = '''
         tell application "System Events"
@@ -27,26 +26,3 @@ def add_linux():
     x, y, width, height = map(int, output_parts)  # Convert each part to an integer
 
     return {"top": int(y), "left": int(x), "width": int(width), "height": int(height)}
-
-add_linux()
-
-'''
-def capture_active_window():
-    active_window = gw.getActiveWindow()
-    if active_window:
-        print(f"Active Window: {active_window.title}")
-        # You might need to adjust the method for focusing on the window depending on your requirements
-        active_window.activate()
-        
-        # Give it a moment to become active
-        time.sleep(1)
-        
-        # Use the window's geometry to capture it
-        screenshot = pyautogui.screenshot(region=(
-            active_window.left,
-            active_window.top,
-            active_window.width,
-            active_window.height
-        ))
-        screenshot.save(f"{active_window.title}.png")
-'''
