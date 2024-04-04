@@ -118,4 +118,4 @@ def run(interval=5, debug=False):
         time.sleep(interval)
 
 if __name__ == '__main__':
-    run(5, True)
+    run()

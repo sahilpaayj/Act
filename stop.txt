@@ -1,0 +1,2 @@
+## copy / paste this into testing to stop app_run.run() 
+## Will clean this up later and add a GUI to do this
