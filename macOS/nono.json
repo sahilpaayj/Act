@@ -1,11 +1,7 @@
 {
     "patterns": [
-        "alibaba.com",
         "amazon.com",
         "ebay.com",
-        "celsius.com",
-        "facebook.com",
-        "instagram.com",
-        "x.com"
+        "poshmark.com"
     ]
 }

@@ -12,6 +12,19 @@ Enabled VScode to view screen
 parent = os.path.dirname(os.path.abspath(__file__))
 ss_path = os.path.join(parent, f'screenshots/test_{time.strftime("%Y-%m-%d_%H-%M-%S")}')
 
+# Capture the primary monitor
+def get_primary_screen_dimensions():
+    with mss.mss() as sct:
+        monitor = sct.monitors[1]  # sct.monitors[0] is the combined size of all monitors
+        return {"top": monitor["top"], "left": monitor["left"], "width": monitor["width"], "height": monitor["height"]}
+
+# Capture the primary monitor
+def get_primary_screen_dimensions():
+    with mss.mss() as sct:
+        monitor = sct.monitors[1]  # sct.monitors[0] is the combined size of all monitors
+        return {"top": monitor["top"], "left": monitor["left"], "width": monitor["width"], "height": monitor["height"]}
+
+
 def capture(dimensions, filename, debug):
     with mss.mss() as sct:
         ss = sct.grab(dimensions)

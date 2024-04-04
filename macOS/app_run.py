@@ -8,8 +8,8 @@ import functools
 import pytesseract
 import multiprocessing
 from PIL import Image
-from display import add_macOS
-from multiSS import capture
+from display import get_active_display_dimensions
+from multiSS import capture, get_primary_screen_dimensions
 
 '''
 Continuously Capture - Async preform OCR - Async check for no no's
@@ -79,9 +79,10 @@ class ContinuousScreenCapture:
                 os.remove(stop_file)
                 break
 
-            monitor = add_macOS() # Find the user's active display
-            if monitor['width'] == -1 or monitor['height'] == -1:
-                raise ValueError("Invalid monitor dimensions received.")
+            monitor = get_active_display_dimensions() # Find dimensions of the user's active window 
+            # If fails, default to user's primary monitor (wherever they have selected)
+            if monitor['width'] == -1 or monitor['height'] == -1:  
+                monitor = get_primary_screen_dimensions() 
 
             filename = f"{self.directory}/cwi_c{index}.png"
             capture(monitor, filename, self.debug) # Screen capture the active display, save as filename
@@ -131,13 +132,14 @@ class ContinuousScreenCapture:
             if debug: print(f"{time.strftime('%Y-%m-%d_%H-%M-%S')}: Checking for nono websites")
             for website in websites:
                 if re.search(website, ocr_text, re.IGNORECASE):
-                    print(f"\nNO NO DETECTED")
+                    print(f"\nNO NO DETECTED: website: {website}")
                     break
 
     # Load nono.json, only happens in init()
     def load_json(self, file_path):
         with open(file_path, 'r') as file:
-            return json.load(file)
+            data = json.load(file)
+        return data['patterns']
 
     # Gracefully close multiprocessing queues
     def graceful_shutdown(self, image_queue, image_process, text_queue, text_process):
@@ -169,5 +171,5 @@ if __name__ == '__main__':
             multiprocessing.set_start_method('fork')
         except RuntimeError as e:
             print(f"Error setting multiprocessing start method: {e}")
-    csc = ContinuousScreenCapture(10,False)
+    csc = ContinuousScreenCapture(5,False)
     csc.run()

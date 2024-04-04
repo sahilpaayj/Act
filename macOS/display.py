@@ -9,7 +9,7 @@ Enabled VScode to talk to system events
 # add - active display's dimensions
 # TODO: uses z-index, captures command+F box active even if not selected
 
-def add_macOS():
+def get_active_display_dimensions():
     script = '''
         tell application "System Events"
             set frontmostProcess to first application process whose frontmost is true and name is not "Finder"
