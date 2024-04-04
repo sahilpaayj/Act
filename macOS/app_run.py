@@ -5,35 +5,44 @@ import json
 import time
 import signal
 import functools
+import threading
 import pytesseract
 import multiprocessing
+import tkinter as tk
+
 from PIL import Image
+from queue import Queue
+from tkinter import messagebox
+
 from display import get_active_display_dimensions
 from multiSS import capture, get_primary_screen_dimensions
 
-'''
-Continuously Capture - Async preform OCR - Async check for no no's
 
-run() - checks every ~5 seconds~ if a user is using specific websites
-    stops when stop.txt is in this repo or ctrl + c
-    Creates directory for screenshots, opens queues for image processing + pattern matching
-    Finds active browser, takes picture, puts picture on image queue
-    preprocess_image() receives image, preprocesses, sends to process_image() 
-    process_image() runs OCR, puts output on text queue for check_patterns() 
-    check_patterns() receives text, runs pattern matching
-
-BUGS...
-#TODO: ASAP stop.txt to exit is wack, need a better way. Maybe GUI? but they would start a GUI to end a background process?
-    maybe an exectuable, do they ever need to stop this process? maybe we build it so it never ends.
-#TODO: Bug for small display? check logs, seen in hover over domain in tab in chrome 
-
-ENHANCEMENTS...
-#TODO: If nono detected, move image elsewhere, 
-       Clean up no nono images unless testing
-       mark the found pattern in red? thats tough the way im doing text, but would be useful. 
-#TODO: Only take pictures when the display is a web browser? no online shopping offline but wb app purchases? sm we worry about? prolly, gamers
-'''
 class ContinuousScreenCapture:
+    '''
+    Continuously Capture - Async preform OCR - Async check for no no's - Go to thread 2 for
+
+    run() - checks every ~5 seconds~ if a user is using specific websites
+        stops when stop.txt is in this repo or ctrl + c
+        Creates directory for screenshots, opens queues for image processing + pattern matching
+        Finds active browser, takes picture, puts picture on image queue
+        preprocess_image() receives image, preprocesses, sends to process_image() 
+        process_image() runs OCR, puts output on text queue for check_patterns() 
+        check_patterns() receives text, runs pattern matching
+
+    BUGS...
+    #TODO: ASAP stop.txt to exit is wack, need a better way. Maybe GUI? but they would start a GUI to end a background process?
+        maybe an exectuable, do they ever need to stop this process? maybe we build it so it never ends.
+    #TODO: Bug for small display? check logs, seen in hover over domain in tab in chrome 
+
+    ENHANCEMENTS...
+    #TODO: If nono detected, move image elsewhere, 
+        Clean up no nono images unless testing
+        mark the found pattern in red? thats tough the way im doing text, but would be useful. 
+    #TODO: Only take pictures when the display is a web browser? no online shopping offline but wb app purchases? sm we worry about? prolly, gamers
+    #TODO: Account for load conditions in queue and process management
+    #TODO: Pass websites through from app_start instead of nono.json()
+    '''
     def __init__(self, interval=5, debug=True):
         self.interval = interval
         self.debug = debug
@@ -44,6 +53,19 @@ class ContinuousScreenCapture:
         self.websites = self.load_json(os.path.join(self.parent, 'nono.json'))
 
         self.shutdown_event = multiprocessing.Event()
+        self.nono_detected_event = multiprocessing.Event()
+        self.nono_detected_site = multiprocessing.Queue()  # To store the website name
+
+        #self.gui_queue = Queue()
+        #self.popup_event = threading.Event()
+
+        # Initialize GUI thread
+        #self.gui_thread = GuiThread(self.gui_queue, self.popup_event)
+        #self.gui_thread.start()  # Runs the run method
+
+        self.nono_detected = None
+
+        self.run()
 
     def run(self):
         if self.debug: print('DEBUGGING ENABLED')
@@ -54,7 +76,8 @@ class ContinuousScreenCapture:
         os.makedirs(self.directory, exist_ok=True)
 
         # Set up queues for image processing and pattern recognition (just text for now)
-        # in here bc of https://github.com/python/cpython/issues/90549
+        # in here bc of pickling error when passing queues + processes as self.___. 
+        # if you know how to move this to init(), or do it better, take a rip
         image_queue = multiprocessing.Queue(maxsize=10)
         text_queue = multiprocessing.Queue(maxsize=10)
 
@@ -74,15 +97,29 @@ class ContinuousScreenCapture:
         index = 0
         stop_file = os.path.join(self.parent, 'stop.txt')
         while not self.shutdown_event.is_set():
+            # Shut down without a terminal
             if os.path.exists(stop_file):
                 if self.debug: print(f"---------\n{time.strftime('%Y-%m-%d_%H-%M-%S')}: Stop file found, exiting...")
                 os.remove(stop_file)
                 break
+            
+            # Check for detections
+            #if self.nono_detected_event.is_set():
+            #    website = self.nono_detected_site.get()  # Retrieve the detected site
+            #    if self.debug: print(f"---------\n{time.strftime('%Y-%m-%d_%H-%M-%S')}: Requesting popup for website: {website}")
+            #    self.gui_queue.put("show_popup")   # Request the GUI thread to show the popup
+            #    self.popup_event.wait() # Wait here for the popup to be acknowledged before continuing
+            if self.nono_detected_event.is_set():
+                if self.debug: print(f"---------\n{time.strftime('%Y-%m-%d_%H-%M-%S')}: Popup open, website: {self.nono_detected}")
+                website = self.nono_detected_site.get()  # Retrieve the detected site
+                self.show_nono_popup(website)
+                self.nono_detected_event.clear()  # Reset the event for future detections
 
-            monitor = get_active_display_dimensions() # Find dimensions of the user's active window 
-            # If fails, default to user's primary monitor (wherever they have selected)
-            if monitor['width'] == -1 or monitor['height'] == -1:  
-                monitor = get_primary_screen_dimensions() 
+            # Find dimensions of the user's active window 
+            monitor = get_active_display_dimensions() 
+            #if monitor['width'] == -1 or monitor['height'] == -1:  # If fails, default to user's primary monitor (wherever they have selected)
+            #    if self.debug: print(f"---------\n{time.strftime('%Y-%m-%d_%H-%M-%S')}: Defaulting to primary monitor")
+            #    monitor = get_primary_screen_dimensions() 
 
             filename = f"{self.directory}/cwi_c{index}.png"
             capture(monitor, filename, self.debug) # Screen capture the active display, save as filename
@@ -133,7 +170,19 @@ class ContinuousScreenCapture:
             for website in websites:
                 if re.search(website, ocr_text, re.IGNORECASE):
                     print(f"\nNO NO DETECTED: website: {website}")
+                    self.nono_detected_site.put(website)  # Store the detected site
+                    self.nono_detected_event.set()  # Signal that a nono was detected             
                     break
+
+    # Display a popup when a nono is detected and pause the program execution.
+    def show_nono_popup(self, website):
+        # This function will block the calling thread until the messagebox is closed
+        root = tk.Tk()
+        root.withdraw()  # Hide the main window (optional)
+        messagebox.showinfo("Nono Detected!", f"We saw you are on {website}. Are you sure that you want to continue?")
+        root.quit()
+        root.destroy()
+        if self.debug: print(f"---------\n{time.strftime('%Y-%m-%d_%H-%M-%S')}: Popup closed")
 
     # Load nono.json, only happens in init()
     def load_json(self, file_path):
@@ -164,12 +213,49 @@ class ContinuousScreenCapture:
         if self.debug: print(f"---------\n{time.strftime('%Y-%m-%d_%H-%M-%S')}: Signal received, exiting...")
         self.shutdown_event.set()
 
+'''
+import tkinter as tk
+from tkinter import messagebox
+import threading
+import queue
+
+class GuiThread(threading.Thread):
+    def __init__(self, gui_queue, popup_event):
+        super().__init__()
+        self.gui_queue = gui_queue
+        self.popup_event = popup_event
+
+    def run(self):
+        print("GUI thread is running...")
+        self.root = tk.Tk()
+        self.root.withdraw()
+        self.check_queue()
+        self.root.mainloop()
+
+    def check_queue(self):
+        try:
+            while True:
+                message = self.gui_queue.get_nowait()
+                if message == "show_popup":
+                    print("Popup is comin, oh lawd")
+                    self.show_popup()
+        except queue.Empty:
+            pass
+        self.root.after(100, self.check_queue)
+
+    def show_popup(self):
+        # Show popup and pause main thread
+        self.popup_event.clear()
+        messagebox.showinfo("Malfesence Detected! Investigate🧐 Mode🔎", "We saw you are on a not allowed site. Are you sure that you want to continue?")
+        self.popup_event.set()
+'''
+
 if __name__ == '__main__':
-    # adaptation of workaround bc of https://github.com/python/cpython/issues/90549
+    # workaround from https://github.com/python/cpython/issues/90549
     if hasattr(multiprocessing, 'set_start_method'):
         try:
             multiprocessing.set_start_method('fork')
         except RuntimeError as e:
             print(f"Error setting multiprocessing start method: {e}")
-    csc = ContinuousScreenCapture(5,False)
-    csc.run()
+
+    csc = ContinuousScreenCapture(15,True)

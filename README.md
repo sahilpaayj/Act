@@ -7,10 +7,11 @@ Fint is a desktop app moniotrs the user's active display (whatever screen the us
 
 Next projects:
 - add mouse gesture recognition support, maybe a learn mode?
-- add a GUI
+- add object recognition
+- GUI is in tkinter... let's see how this is, open to ideas!
 - action support: text with twilio, voice to voice (hume.ai), notifications, open to ideas!
-- OS: build Ubuntu, Linux support. Should be easy at this point, add_macOS() is only macOS specific piece to my knowledge
-- mobile: would love to add mobile support, iOS permissions might be tough
+- OS: Ubuntu, Linux support. Should be easy at this point, display and multiprocessing fork in app_run() are macOS
+- mobile: would love to add mobile support, iOS permissions might be tough to get around
 
 ## Installation and Setup
 

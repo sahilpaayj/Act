@@ -1,7 +1,13 @@
 {
     "patterns": [
+        "stockx.com",
         "amazon.com",
         "ebay.com",
-        "poshmark.com"
+        "facebook.com",
+        "instagram.com",
+        "x.com",
+        "burgerking.com",
+        "olivegarden.com",
+        "theredlobster.com"
     ]
 }

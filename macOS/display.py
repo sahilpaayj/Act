@@ -1,4 +1,6 @@
 import subprocess
+from multiSS import get_primary_screen_dimensions
+
 
 '''
 Enabled VScode to talk to system events
@@ -28,7 +30,7 @@ def get_active_display_dimensions():
         # Command line command to find the dimensions + position of the first process's front window
         output = subprocess.check_output(["osascript", "-e", script]).decode('utf-8')
         if output.startswith('-1'):
-            raise ValueError("Could not get frontmost window dimensions.")
+            return get_primary_screen_dimensions() # raise ValueError("Could not get frontmost window dimensions.")
         
         output_parts = output.strip().split(", ")
         x, y, width, height = map(int, output_parts)

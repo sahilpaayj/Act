@@ -16,7 +16,7 @@ class EnterNoNo(tk.Tk):
         # Text field to accept websites
         self.entry_var = tk.StringVar()
         self.entry_var.set("amazon.com")
-        self.entry = tk.Entry(self, textvariable=self.entry_var, width=37)
+        self.entry = tk.Entry(self, textvariable=self.entry_var, width=37, highlightthickness=0)
         self.entry.bind("<FocusIn>", self.on_entry_click)
         self.entry.bind("<FocusOut>", self.on_focusout)
         self.entry.bind('<Return>', self.add_website)
@@ -30,11 +30,11 @@ class EnterNoNo(tk.Tk):
         SCROLL_WIDTH = 350  # Max width for the scrollable area
         SCROLL_HEIGHT = 150  # Height for the scrollable area
 
-        self.scroll_frame = tk.Frame(self, width=SCROLL_WIDTH)
+        self.scroll_frame = tk.Frame(self, width=SCROLL_WIDTH, borderwidth=0, relief=tk.FLAT)
         self.scroll_frame.grid(row=1, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
         self.scroll_frame.grid_propagate(False)  # Lock the frame's size
 
-        self.scroll_canvas = tk.Canvas(self.scroll_frame, width=SCROLL_WIDTH, height=SCROLL_HEIGHT, bg="gray")  # Set a background color for visibility
+        self.scroll_canvas = tk.Canvas(self.scroll_frame, width=SCROLL_WIDTH, height=SCROLL_HEIGHT, highlightthickness=0)  # Set a background color for visibility
         self.scrollbar = tk.Scrollbar(self.scroll_frame, orient="vertical", command=self.scroll_canvas.yview)
         self.scroll_canvas.configure(yscrollcommand=self.scrollbar.set)
 
@@ -49,8 +49,6 @@ class EnterNoNo(tk.Tk):
         self.scroll_canvas.pack(side="left", fill="both", expand=True)
         self.scrollbar.pack(side="left", fill="y")
 
-        self.populate_scrollbox()
-
         # Button to move to next screen
         self.done_button = tk.Button(self, text="Done!", command=self.switch_to_settings)
         self.done_button.grid(row=2, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
@@ -59,6 +57,27 @@ class EnterNoNo(tk.Tk):
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(1, weight=1)
+
+        '''
+        # COLORS
+        # For the window background color
+        self.bg_color = "#F0EAD6"  # Eggshell
+        self.configure(bg=self.bg_color) 
+        self.scrollable_frame.config(bg=self.bg_color)
+        self.scroll_canvas.config(bg=self.bg_color)
+        self.scroll_frame.config(bg=self.bg_color)
+
+        # For the buttons
+        self.button_bg_color = "#FFC0CB"  # Pink
+        self.add_button.configure(bg=self.button_bg_color)  
+        self.done_button.configure(bg=self.button_bg_color)  
+
+        # For the entry
+        self.highlight_color = "#FFFFFF"  # White
+        self.text_color = "#007ACC"  # Blue
+        self.entry.configure(bg=self.highlight_color, fg=self.text_color)  
+        '''
+        self.populate_websites()
 
     def on_entry_click(self, event):
         """Clear the entry box on focus if it's the placeholder text."""
@@ -88,7 +107,7 @@ class EnterNoNo(tk.Tk):
         if self.validate_website(website):
             self.website_list.append(website)
             self.save_website(website)
-            self.populate_scrollbox()
+            self.populate_websites()
             self.entry_var.set("amazon.com")
         else:
             messagebox.showerror("Error", "Invalid website. Please enter a valid URL.")
@@ -105,29 +124,46 @@ class EnterNoNo(tk.Tk):
                 return data["patterns"]
         except (FileNotFoundError, json.JSONDecodeError):
             return []
-
-    def populate_scrollbox(self):
-        """Clear and repopulate the scrollable list with websites and remove buttons."""
+        
+    def populate_websites(self):
+        """Clear and repopulate the UI with websites and remove buttons."""
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
-        for website in self.website_list:
 
-            # Then, when creating each row_frame, you would use the same background color
-            row_frame = tk.Frame(self.scrollable_frame, bg=self.scroll_frame_bg)
-            row_frame.pack(fill='x', expand=True, padx=15, pady=10)
+        rows = (len(self.website_list) + 1) // 2
+        cols = 2  # Number of columns
 
-            label = tk.Label(row_frame, text=website, bg=self.scroll_frame_bg)
-            label.pack(side='left', padx=5)  # Adds padding on the left side of the label, acting like a margin
+        for index, website in enumerate(self.website_list):
+            row = index // cols
+            col = index % cols
 
-            remove_button = tk.Button(row_frame, text='Remove', bg=self.scroll_frame_bg, command=lambda w=website: self.remove_website(w))
+            # Frame for each website entry
+            row_frame = tk.Frame(self.scrollable_frame) #, bg=self.bg_color)
+            row_frame.grid(row=row, column=col, padx=10, pady=5, sticky="ew")
+
+            # Website Label
+            label = tk.Label(row_frame, text=website, borderwidth=0, relief=tk.FLAT) # bg=self.bg_color, fg=self.text_color, borderwidth=0, relief=tk.FLAT)
+            label.pack(side='left', padx=5)
+
+            # Remove Button
+            remove_button = tk.Button(row_frame, text='Remove', command=lambda w=website: self.remove_website(w), borderwidth=0, relief=tk.FLAT) #bg=self.button_bg_color, command=lambda w=website: self.remove_website(w), borderwidth=0, relief=tk.FLAT)
             remove_button.pack(side='right', padx=10)
 
+        # Adjust the row and column configurations for equal distribution
+        for r in range(rows):
+            self.scrollable_frame.grid_rowconfigure(r, weight=1)
+        for c in range(cols):
+            self.scrollable_frame.grid_columnconfigure(c, weight=1)
+
+        # Adjust the scrollable frame size according to the content
+        self.scrollable_frame.update_idletasks()
+        self.scroll_canvas.configure(scrollregion=self.scroll_canvas.bbox("all"))
 
     def remove_website(self, website):
         """Remove a website from the list and update nono.json."""
         self.website_list.remove(website)
         self.save_website(website)  # Save the updated list to nono.json
-        self.populate_scrollbox()  # Refresh the scrollable list
+        self.populate_websites()  # Refresh the scrollable list
 
     def switch_to_settings(self):
         self.withdraw()  # Hide the main window
