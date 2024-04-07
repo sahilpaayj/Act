@@ -22,6 +22,7 @@ Next projects:
 
 - python 3.11.8
 - macOS (for now)
+- tesseract OCR downloaded (change path, make this a env)
 
 #### 1. Install Poetry
 Poetry is a tool for dependency management and packaging in Python. 
